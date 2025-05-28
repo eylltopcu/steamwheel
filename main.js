@@ -68,7 +68,15 @@ function createWheel(gameList) {
   if (wheel) {
     wheel.setData(names);
   } else {
-    wheel = new WheelSurf({
+    const Wheel = window.WheelSurf?.default || window.WheelSurf;
+
+    if (!Wheel) {
+      console.error("WheelSurf tanımlı değil!");
+      statusText.textContent = "Çark bileşeni yüklenemedi!";
+      return;
+    }
+
+    wheel = new Wheel({
       el: "#wheel-wrapper",
       data: names,
       duration: 5000,
@@ -96,6 +104,7 @@ function createWheel(gameList) {
   statusText.textContent = "";
   coverImage.style.display = "none";
 }
+
 
 spinBtn.addEventListener("click", () => {
   if (wheel && remainingGames.length > 0) {
