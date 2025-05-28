@@ -6,34 +6,31 @@
   <title>Steam Game Picker 🎮</title>
   <link rel="stylesheet" href="style.css" />
   <script src="https://cdn.jsdelivr.net/npm/wheelsurf@1.0.1/dist/wheelsurf.min.js"></script>
-
 </head>
 <body>
   <div class="container">
     <h1>Steam Game Picker 🎡</h1>
 
     <div class="input-group">
-      <label for="steamId">Steam ID:</label>
-      <input type="text" id="steamId" placeholder="Enter your Steam id" />
+      <label for="steamIdInput">Steam ID:</label>
+      <input type="text" id="steamIdInput" placeholder="Enter your Steam ID" />
     </div>
 
+
     <div class="input-group checkbox">
-      <label><input type="checkbox" id="excludeFamily" /> Aile paylaşımı oyunlarını çıkar</label>
+      <label><input type="checkbox" id="includeFamily" /> Include Family Shared Games</label>
     </div>
 
     <button id="fetchBtn">Oyunları Getir</button>
 
-    <div id="wheelContainer" class="hidden">
-      <canvas id="wheelCanvas" width="500" height="500"></canvas>
-      <button id="spinButton">🎲 Spin!</button>
-      <p id="selectedGame"></p>
-    </div>
-  </div>
-  <div id="wheel-wrapper" style="margin: 30px auto; width: 300px; height: 300px;"></div>
-<button id="spinButton">🎡 Spin!</button>
-<p id="chosenGame" style="font-weight: bold; margin-top: 20px;"></p>
-<img id="coverImage" src="" alt="Game Cover" style="display: none; width: 200px; margin-top: 20px; border-radius: 12px; box-shadow: 0 0 10px #000;">
+    <div id="wheel-wrapper" style="margin: 30px auto; width: 300px; height: 300px;"></div>
 
+    <button id="spinButton" disabled>🎲 Spin!</button>
+
+    <p id="chosenGame" style="font-weight: bold; margin-top: 20px;"></p>
+
+    <img id="coverImage" src="" alt="Game Cover" style="display: none; width: 200px; margin-top: 20px; border-radius: 12px; box-shadow: 0 0 10px #000;">
+  </div>
 
   <script src="main.js"></script>
 </body>

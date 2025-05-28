@@ -1,35 +1,35 @@
 const API_BASE = "/api/getGames";
 
-const steamIdInput = document.getElementById("steamIdInput");
-// API key input kaldırıldı, artık yok
+const steamIdInput = document.getElementById("steamId");
 const fetchBtn = document.getElementById("fetchBtn");
-const statusText = document.getElementById("status");
-const familyToggle = document.getElementById("includeFamily");
+const statusText = document.getElementById("chosenGame");
+const familyToggle = document.getElementById("excludeFamily");
 const spinBtn = document.getElementById("spinButton");
-const chosenGameText = document.getElementById("chosenGame");
 const coverImage = document.getElementById("coverImage");
+const wheelWrapper = document.getElementById("wheel-wrapper");
 
 let remainingGames = [];
 let wheel;
 
 fetchBtn.addEventListener("click", async () => {
   const steamId = steamIdInput.value.trim();
-  const includeFamily = familyToggle.checked;
+  const includeFamily = !familyToggle.checked; // checkbox 'excludeFamily' olduğundan ters kullanalım
 
   if (!steamId) {
-    alert("Please enter your Steam ID.");
+    alert("Lütfen Steam ID'nizi girin.");
     return;
   }
 
-  statusText.textContent = "Fetching your games...";
+  statusText.textContent = "Oyunlar getiriliyor...";
+  spinBtn.disabled = true;
+  coverImage.style.display = "none";
 
   try {
-    // API key artık otomatik backend'den alınıyor, gönderme!
     const res = await fetch(`${API_BASE}?steamid=${steamId}`);
     const data = await res.json();
 
     if (!data.response || !data.response.games) {
-      statusText.textContent = "No games found or Steam profile might be private.";
+      statusText.textContent = "Oyun bulunamadı veya profil gizli olabilir.";
       return;
     }
 
@@ -38,30 +38,22 @@ fetchBtn.addEventListener("click", async () => {
     // Oynanmamış oyunları filtrele
     let unplayedGames = games.filter(game => game.playtime_forever === 0);
 
-    // Aile oyunlarını dahil etme durumu
+    // Aile paylaşımlı oyunları çıkar (includeFamily false ise)
     if (!includeFamily) {
-      // Steam API response’da "has_community_visible_stats" oyun oynanıp oynanmadığını gösterir, ama aile oyunlarını tespit için genelde "playtime_forever" 0’dır.
-      // Aile oyunlarını ayıklamak için şöyle yapalım:
-      // Eğer oyun "playtime_forever" 0'dan fazla değilse ve "has_community_visible_stats" yoksa aile oyunu olabilir, 
-      // ama daha kesin filtreleme yapmak için başka API'ler veya manuel liste gerekebilir.
-      // Biz basitçe "playtime_forever" == 0 ve oyun sahibi tarafından satın alınmış oyunları bırakıyoruz.
-      // Bu yüzden aile oyunlarını ayıklamak için "playtime_forever" sıfır olsa bile bazı aile oyunları olabilir,
-      // o yüzden biz şöyle yapalım: Aile oyunlarını dahil etme kapalı ise, oyunları olduğu gibi bırak (çünkü API bunu ayırmaz).
-      // Eğer ileride net filtreleme istersen, backend'e özel endpoint ile yapılabilir.
-      // Şimdilik aynen bırakıyoruz.
+      unplayedGames = unplayedGames.filter(game => !game.has_community_visible_stats);
     }
 
     if (unplayedGames.length === 0) {
-      statusText.textContent = "No unplayed games found!";
+      statusText.textContent = "Oynanmamış oyun bulunamadı!";
       return;
     }
 
-    statusText.textContent = `Found ${unplayedGames.length} unplayed games! Now you can spin!`;
+    statusText.textContent = `Toplam ${unplayedGames.length} oynanmamış oyun bulundu! Çarkı döndürebilirsiniz.`;
 
     createWheel(unplayedGames);
   } catch (err) {
-    console.error("Fetch error:", err);
-    statusText.textContent = "Failed to fetch games. Check your Steam ID.";
+    console.error("Fetch hatası:", err);
+    statusText.textContent = "Oyunlar getirilirken hata oluştu. Steam ID'nizi kontrol edin.";
   }
 });
 
@@ -77,12 +69,12 @@ function createWheel(gameList) {
     wheel.setData(names);
   } else {
     wheel = new WheelSurf({
-      el: '#wheel-wrapper',
+      el: "#wheel-wrapper",
       data: names,
       duration: 5000,
       callback: (selectedName) => {
         const selectedGame = remainingGames.find(g => g.name === selectedName);
-        chosenGameText.textContent = `🎯 Selected Game: ${selectedGame.name}`;
+        statusText.textContent = `🎯 Seçilen Oyun: ${selectedGame.name}`;
 
         coverImage.src = `https://cdn.cloudflare.steamstatic.com/steam/apps/${selectedGame.appid}/library_600x900.jpg`;
         coverImage.style.display = "block";
@@ -93,7 +85,7 @@ function createWheel(gameList) {
           wheel.setData(remainingGames.map(g => g.name));
         } else {
           spinBtn.disabled = true;
-          chosenGameText.textContent = `🎉 All games have been picked!`;
+          statusText.textContent = "🎉 Tüm oyunlar seçildi!";
           coverImage.style.display = "none";
         }
       }
@@ -101,7 +93,7 @@ function createWheel(gameList) {
   }
 
   spinBtn.disabled = false;
-  chosenGameText.textContent = "";
+  statusText.textContent = "";
   coverImage.style.display = "none";
 }
 
