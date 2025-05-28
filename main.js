@@ -65,8 +65,8 @@ function drawWheel() {
   // ctx.moveTo(centerX, centerY - radius - 20);
   // Şimdi işaretçi aşağıda olacak:
   ctx.moveTo(centerX, centerY - radius - 20);
-  ctx.lineTo(centerX - 15, centerY - radius + 20);
   ctx.lineTo(centerX + 15, centerY - radius + 20);
+  ctx.lineTo(centerX - 15, centerY - radius + 20);
   ctx.closePath();
   ctx.fill();
 }
