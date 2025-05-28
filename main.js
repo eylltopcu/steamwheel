@@ -21,7 +21,8 @@ fetchButton.addEventListener("click", () => {
 
 async function fetchUnplayedGames(steamId, excludeFamily) {
   try {
-    const url = `https://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key=${API_KEY}&steamid=${steamId}&include_appinfo=true&include_played_free_games=true&format=json`;
+    const proxy = "https://corsproxy.io/?";
+const url = `${proxy}https://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key=${API_KEY}&steamid=${steamId}&include_appinfo=true&include_played_free_games=true&format=json`;
 
     const res = await fetch(url);
     const data = await res.json();
