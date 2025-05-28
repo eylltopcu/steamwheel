@@ -6,6 +6,11 @@ const statusText = document.getElementById("chosenGame");
 const familyToggle = document.getElementById("includeFamily");
 const spinBtn = document.getElementById("spinButton");
 const coverImage = document.getElementById("coverImage");
+const selectedGamePanel = document.getElementById("selectedGamePanel");
+const selectedGameName = document.getElementById("selectedGameName");
+const selectedGameImage = document.getElementById("selectedGameImage");
+const closePanelBtn = document.getElementById("closePanelBtn");
+
 
 const canvas = document.getElementById("wheel");
 const ctx = canvas.getContext("2d");
@@ -63,11 +68,10 @@ function drawWheel() {
 }
 
 function easeOut(t, b, c, d) {
-  const ts = (t /= d) * t;
-  const tc = ts * t;
-  return b + c * (tc + -3 * ts + 3 * t);
+  t /= d;
+  t--;
+  return c * (t*t*t + 1) + b;
 }
-
 function rotateWheel() {
   spinTime += 30;
   if (spinTime >= spinTimeTotal) {
@@ -88,13 +92,18 @@ function stopRotateWheel() {
   const index = Math.floor(((360 - (degrees % 360)) / arcd)) % segments;
   const selectedGame = games[index];
 
-  statusText.textContent = `🎯 Seçilen Oyun: ${selectedGame.name}`;
+  statusText.textContent = "";  // panel gösterince oradan silecek
 
-  coverImage.src = `https://cdn.cloudflare.steamstatic.com/steam/apps/${selectedGame.appid}/library_600x900.jpg`;
-  coverImage.style.display = "block";
+  // Paneli doldur ve göster
+  selectedGameName.textContent = `🎯 Seçilen Oyun: ${selectedGame.name}`;
+  selectedGameImage.src = `https://cdn.cloudflare.steamstatic.com/steam/apps/${selectedGame.appid}/library_600x900.jpg`;
+  selectedGamePanel.style.display = "block";
 
   spinBtn.disabled = false;
 }
+closePanelBtn.addEventListener("click", () => {
+  selectedGamePanel.style.display = "none";
+});
 
 fetchBtn.addEventListener("click", async () => {
   const steamId = steamIdInput.value.trim();
