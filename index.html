@@ -23,7 +23,10 @@
 
     <button id="fetchBtn">Oyunları Getir</button>
 
-    <div id="wheel-wrapper" style="margin: 30px auto; width: 300px; height: 300px;"></div>
+    <div id="wheel-wrapper">
+  <canvas id="canvas" width="500" height="500"></canvas>
+</div>
+
 
     <button id="spinButton" disabled>🎲 Spin!</button>
 
@@ -33,8 +36,8 @@
   </div>
 
   
- <!-- WheelSurf CDN (mutlaka önce gelmeli!) -->
-<script src="https://cdn.jsdelivr.net/npm/wheelsurf@1.0.1/dist/wheelsurf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/winwheel@2.7.0/Winwheel.min.js"></script>
+
 
 <!-- main.js -->
 <script src="/main.js"></script>

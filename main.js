@@ -1,6 +1,4 @@
 const API_BASE = "/api/getGames";
-console.log("WheelSurf nedir:", window.WheelSurf);
-
 
 const steamIdInput = document.getElementById("steamId");
 const fetchBtn = document.getElementById("fetchBtn");
@@ -8,14 +6,13 @@ const statusText = document.getElementById("chosenGame");
 const familyToggle = document.getElementById("includeFamily");
 const spinBtn = document.getElementById("spinButton");
 const coverImage = document.getElementById("coverImage");
-const wheelWrapper = document.getElementById("wheel-wrapper");
 
 let remainingGames = [];
-let wheel;
+let theWheel;
 
 fetchBtn.addEventListener("click", async () => {
   const steamId = steamIdInput.value.trim();
-  const includeFamily = !familyToggle.checked; // checkbox 'excludeFamily' olduğundan ters kullanalım
+  const includeFamily = !familyToggle.checked;
 
   if (!steamId) {
     alert("Lütfen Steam ID'nizi girin.");
@@ -37,10 +34,8 @@ fetchBtn.addEventListener("click", async () => {
 
     let games = data.response.games;
 
-    // Oynanmamış oyunları filtrele
     let unplayedGames = games.filter(game => game.playtime_forever === 0);
 
-    // Aile paylaşımlı oyunları çıkar (includeFamily false ise)
     if (!includeFamily) {
       unplayedGames = unplayedGames.filter(game => !game.has_community_visible_stats);
     }
@@ -65,51 +60,67 @@ function createWheel(gameList) {
     appid: game.appid
   }));
 
-  const names = remainingGames.map(g => g.name);
+  // Winwheel için dilimler
+  const segments = remainingGames.map(g => ({
+    fillStyle: getRandomColor(),
+    text: g.name
+  }));
 
-  if (wheel) {
-    wheel.setData(names);
-  } else {
-    const Wheel = window.WheelSurf?.default || window.WheelSurf;
+  // Eğer önceden çark varsa sil
+  if (theWheel) {
+    theWheel.stopAnimation(false);
+    theWheel.rotationAngle = 0;
+    theWheel.segments = [];
+    theWheel.clearCanvas();
+  }
 
-    if (!Wheel) {
-      console.error("WheelSurf tanımlı değil!");
-      statusText.textContent = "Çark bileşeni yüklenemedi!";
-      return;
-    }
-
-    wheel = new Wheel({
-      el: "#wheel-wrapper",
-      data: names,
-      duration: 5000,
-      callback: (selectedName) => {
+  theWheel = new Winwheel({
+    canvasId: 'canvas',
+    numSegments: segments.length,
+    segments: segments,
+    animation: {
+      type: 'spinToStop',
+      duration: 5,
+      spins: 8,
+      callbackFinished: (indicatedSegment) => {
+        const selectedName = indicatedSegment.text;
         const selectedGame = remainingGames.find(g => g.name === selectedName);
-        statusText.textContent = `🎯 Seçilen Oyun: ${selectedGame.name}`;
 
+        statusText.textContent = `🎯 Seçilen Oyun: ${selectedGame.name}`;
         coverImage.src = `https://cdn.cloudflare.steamstatic.com/steam/apps/${selectedGame.appid}/library_600x900.jpg`;
         coverImage.style.display = "block";
 
+        // Seçilen oyunu çıkar
         remainingGames = remainingGames.filter(g => g.name !== selectedName);
 
         if (remainingGames.length > 0) {
-          wheel.setData(remainingGames.map(g => g.name));
+          createWheel(remainingGames);
         } else {
           spinBtn.disabled = true;
           statusText.textContent = "🎉 Tüm oyunlar seçildi!";
           coverImage.style.display = "none";
         }
       }
-    });
-  }
+    }
+  });
 
   spinBtn.disabled = false;
   statusText.textContent = "";
   coverImage.style.display = "none";
 }
 
-
 spinBtn.addEventListener("click", () => {
-  if (wheel && remainingGames.length > 0) {
-    wheel.run();
+  if (theWheel && remainingGames.length > 0) {
+    theWheel.startAnimation();
   }
 });
+
+// Rastgele renk fonksiyonu
+function getRandomColor() {
+  const letters = '0123456789ABCDEF';
+  let color = '#';
+  for(let i=0; i<6; i++) {
+    color += letters[Math.floor(Math.random() * 16)];
+  }
+  return color;
+}
