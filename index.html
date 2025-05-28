@@ -3,24 +3,29 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Steam Game Picker</title>
+  <title>Steam Game Picker 🎮</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="container">
-    <h1>🎮 Steam Game Picker</h1>
-    <input type="text" id="steamId" placeholder="Enter your Steam ID">
-    <label>
-      <input type="checkbox" id="excludeFamily"> Exclude Family Shared Games
-    </label>
-    <button id="fetchGames">Fetch Unplayed Games</button>
+    <h1>Steam Game Picker 🎡</h1>
+
+    <div class="input-group">
+      <label for="steamId">Steam ID:</label>
+      <input type="text" id="steamId" placeholder="Enter your Steam id" />
+    </div>
+
+    <div class="input-group checkbox">
+      <label><input type="checkbox" id="excludeFamily" /> Aile paylaşımı oyunlarını çıkar</label>
+    </div>
+
+    <button id="fetchGames">Oyunları Getir</button>
 
     <div id="wheelContainer" class="hidden">
       <canvas id="wheelCanvas" width="500" height="500"></canvas>
-      <button id="spinButton">🎲 Spin</button>
+      <button id="spinButton">🎲 Spin!</button>
+      <p id="selectedGame"></p>
     </div>
-
-    <p id="selectedGame"></p>
   </div>
 
   <script src="main.js"></script>
