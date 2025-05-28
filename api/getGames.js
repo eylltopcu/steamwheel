@@ -11,12 +11,17 @@ export default async function handler(req, res) {
   }
 
   try {
-    const response = await fetch(`https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/?key=${apiKey}&steamid=${steamid}&include_appinfo=true&include_played_free_games=true`);
-    
+    const response = await fetch(
+      `https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/?key=${apiKey}&steamid=${steamid}&include_appinfo=true&include_played_free_games=true`
+    );
+
     const data = await response.json();
 
     return res.status(200).json(data);
   } catch (error) {
-    return res.status(500).json({ error: "Failed to fetch data from Steam API", detail: error.message });
+    return res.status(500).json({
+      error: "Failed to fetch data from Steam API",
+      detail: error.message,
+    });
   }
 }
