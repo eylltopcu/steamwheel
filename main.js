@@ -1,4 +1,6 @@
 const API_BASE = "/api/getGames";
+console.log("WheelSurf nedir:", window.WheelSurf);
+
 
 const steamIdInput = document.getElementById("steamId");
 const fetchBtn = document.getElementById("fetchBtn");
