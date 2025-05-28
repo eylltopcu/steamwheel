@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Steam Game Picker 🎮</title>
   <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/wheelsurf@1.0.1/dist/wheelsurf.min.js"></script>
+
 </head>
 <body>
   <div class="container">
@@ -27,6 +29,11 @@
       <p id="selectedGame"></p>
     </div>
   </div>
+  <div id="wheel-wrapper" style="margin: 30px auto; width: 300px; height: 300px;"></div>
+<button id="spinButton">🎡 Spin!</button>
+<p id="chosenGame" style="font-weight: bold; margin-top: 20px;"></p>
+<img id="coverImage" src="" alt="Game Cover" style="display: none; width: 200px; margin-top: 20px; border-radius: 12px; box-shadow: 0 0 10px #000;">
+
 
   <script src="main.js"></script>
 </body>
