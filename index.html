@@ -10,33 +10,19 @@
 <body>
   <div class="container">
     <h1>Steam Game Picker 🎡</h1>
+<input type="text" id="steamId" placeholder="Steam ID girin" />
+<label><input type="checkbox" id="includeFamily" /> Aile paylaşımlı oyunları dahil et</label>
+<button id="fetchBtn">Oyunları Getir</button>
+<br /><br />
+<canvas id="wheel" width="500" height="500" style="border:1px solid #ccc;"></canvas>
+<br />
+<button id="spinButton" disabled>Çarkı Döndür</button>
+<br />
+<img id="coverImage" src="" alt="Oyun Kapağı" style="display:none; width: 200px; margin-top: 10px;" />
+<div id="chosenGame" style="margin-top:10px; font-weight: bold;"></div>
 
-    <div class="input-group">
-      <label for="steamId">Steam ID:</label>
-      <input type="text" id="steamId" placeholder="Enter your Steam ID" />
-    </div>
-
-
-    <div class="input-group checkbox">
-      <label><input type="checkbox" id="includeFamily" /> Include Family Shared Games</label>
-    </div>
-
-    <button id="fetchBtn">Oyunları Getir</button>
-
-    <div id="wheel-wrapper">
-  <canvas id="canvas" width="500" height="500"></canvas>
-</div>
-
-
-    <button id="spinButton" disabled>🎲 Spin!</button>
-
-    <p id="chosenGame" style="font-weight: bold; margin-top: 20px;"></p>
-
-    <img id="coverImage" src="" alt="Game Cover" style="display: none; width: 200px; margin-top: 20px; border-radius: 12px; box-shadow: 0 0 10px #000;">
-  </div>
 
   
-<script src="https://cdn.jsdelivr.net/npm/winwheel@2.7.0/Winwheel.min.js" defer></script>
 <script src="main.js" defer></script>
 
 
