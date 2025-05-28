@@ -28,6 +28,7 @@ let isSpinning = false;
 let spinTime = 0;
 let spinTimeTotal = 0;
 
+
 function drawWheel() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -49,7 +50,6 @@ function drawWheel() {
     ctx.fillStyle = "#fff";
     ctx.font = "bold 16px Arial";
 
-    // Yazının çok uzun olmaması için kırpma
     let text = games[i].name;
     if(text.length > 20) text = text.substring(0, 17) + "...";
 
@@ -57,21 +57,25 @@ function drawWheel() {
     ctx.restore();
   }
 
-  // Ok işareti
+  // Ok işareti (aşağı bakan)
   ctx.fillStyle = "black";
   ctx.beginPath();
-  ctx.moveTo(centerX, centerY - radius - 20);
-  ctx.lineTo(centerX - 15, centerY - radius + 20);
-  ctx.lineTo(centerX + 15, centerY - radius + 20);
+  // İşaretçiyi aşağı bakacak şekilde çiziyoruz
+  // Önce işaretçi yukarıda olurdu:
+  // ctx.moveTo(centerX, centerY - radius - 20);
+  // Şimdi işaretçi aşağıda olacak:
+  ctx.moveTo(centerX, centerY + radius + 20);
+  ctx.lineTo(centerX - 15, centerY + radius - 20);
+  ctx.lineTo(centerX + 15, centerY + radius - 20);
   ctx.closePath();
   ctx.fill();
 }
-
 function easeOut(t, b, c, d) {
   t /= d;
   t--;
   return c * (t*t*t + 1) + b;
 }
+
 function rotateWheel() {
   spinTime += 30;
   if (spinTime >= spinTimeTotal) {
@@ -79,6 +83,7 @@ function rotateWheel() {
     return;
   }
 
+  // spinTimeTotal * 10 derece/saniye hız ile başlayıp 0’a iniyor
   const spinAngle = easeOut(spinTime, 0, spinTimeTotal * 10, spinTimeTotal);
   startAngle += (spinAngle * Math.PI) / 180;
   drawWheel();
@@ -170,7 +175,7 @@ fetchBtn.addEventListener("click", async () => {
 spinBtn.addEventListener("click", () => {
   if (isSpinning || games.length === 0) return;
   spinTime = 0;
-  spinTimeTotal = Math.floor(Math.random() * 3000) + 3000; // 3-6 saniye arasında dönecek
+  spinTimeTotal = Math.floor(Math.random() * 3000) + 3000; // 3-6 saniye arası
   isSpinning = true;
   spinBtn.disabled = true;
   statusText.textContent = "Dönüyor...";
