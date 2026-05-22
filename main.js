@@ -5,19 +5,17 @@ const fetchBtn = document.getElementById("fetchBtn");
 const statusText = document.getElementById("chosenGame");
 const familyToggle = document.getElementById("includeFamily");
 const spinBtn = document.getElementById("spinButton");
-const coverImage = document.getElementById("coverImage");
 const selectedGamePanel = document.getElementById("selectedGamePanel");
 const selectedGameName = document.getElementById("selectedGameName");
 const selectedGameImage = document.getElementById("selectedGameImage");
 const closePanelBtn = document.getElementById("closePanelBtn");
-
 
 const canvas = document.getElementById("wheel");
 const ctx = canvas.getContext("2d");
 
 const centerX = canvas.width / 2;
 const centerY = canvas.height / 2;
-const radius = 200;
+const radius = 240; // increased radius for larger wheel feeling
 
 let games = [];
 let colors = [];
@@ -28,6 +26,24 @@ let isSpinning = false;
 let spinTime = 0;
 let spinTimeTotal = 0;
 
+// Initialize an empty wheel
+drawEmptyWheel();
+spinBtn.textContent = "ÇARKI DÖNDÜR";
+
+function drawEmptyWheel() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+  ctx.fillStyle = "rgba(255,255,255,0.05)";
+  ctx.fill();
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = "rgba(102, 192, 244, 0.3)";
+  ctx.stroke();
+  ctx.textAlign = "center";
+  ctx.fillStyle = "rgba(255,255,255,0.3)";
+  ctx.font = "bold 20px Inter";
+  ctx.fillText("Henüz oyun yüklenmedi", centerX, centerY);
+}
 
 function drawWheel() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -41,35 +57,52 @@ function drawWheel() {
     ctx.arc(centerX, centerY, radius, angle, nextAngle);
     ctx.fillStyle = colors[i % colors.length];
     ctx.fill();
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = "rgba(0,0,0,0.3)";
     ctx.stroke();
 
     ctx.save();
     ctx.translate(centerX, centerY);
     ctx.rotate(angle + (nextAngle - angle) / 2);
     ctx.textAlign = "right";
+    ctx.textBaseline = "middle";
     ctx.fillStyle = "#fff";
-    ctx.font = "bold 16px Arial";
+    ctx.font = "bold 14px Inter";
+    
+    // Shadow for text readability
+    ctx.shadowColor = "rgba(0,0,0,0.8)";
+    ctx.shadowBlur = 4;
 
     let text = games[i].name;
-    if(text.length > 20) text = text.substring(0, 17) + "...";
+    if(text.length > 22) text = text.substring(0, 20) + "...";
 
-    ctx.fillText(text, radius - 10, 10);
+    ctx.fillText(text, radius - 20, 0);
     ctx.restore();
   }
 
-  // Ok işareti (aşağı bakan)
-  ctx.fillStyle = "black";
+  // Draw Center Circle
   ctx.beginPath();
-  // İşaretçiyi aşağı bakacak şekilde çiziyoruz
-  // Önce işaretçi yukarıda olurdu:
-  // ctx.moveTo(centerX, centerY - radius - 20);
-  // Şimdi işaretçi aşağıda olacak:
-  ctx.moveTo(centerX, centerY - radius - 20);
-  ctx.lineTo(centerX + 15, centerY - radius + 20);
-  ctx.lineTo(centerX - 15, centerY - radius + 20);
+  ctx.arc(centerX, centerY, 30, 0, 2 * Math.PI);
+  ctx.fillStyle = "#1b2838";
+  ctx.fill();
+  ctx.lineWidth = 4;
+  ctx.strokeStyle = "#66c0f4";
+  ctx.stroke();
+
+  // Draw sleek pointer
+  ctx.fillStyle = "#ff4747";
+  ctx.shadowColor = "rgba(0,0,0,0.5)";
+  ctx.shadowBlur = 10;
+  ctx.beginPath();
+  ctx.moveTo(centerX, centerY - radius + 10);
+  ctx.lineTo(centerX + 15, centerY - radius - 25);
+  ctx.lineTo(centerX - 15, centerY - radius - 25);
   ctx.closePath();
   ctx.fill();
+  
+  ctx.shadowBlur = 0; // reset
 }
+
 function easeOut(t, b, c, d) {
   t /= d;
   t--;
@@ -83,7 +116,6 @@ function rotateWheel() {
     return;
   }
 
-  // spinTimeTotal * 10 derece/saniye hız ile başlayıp 0’a iniyor
   const spinAngle = easeOut(spinTime, 0, spinTimeTotal * 10, spinTimeTotal);
   startAngle += (spinAngle * Math.PI) / 180;
   drawWheel();
@@ -92,65 +124,76 @@ function rotateWheel() {
 
 function stopRotateWheel() {
   isSpinning = false;
-  const degrees = (startAngle * 180) / Math.PI + 90;
-  const arcd = 360 / segments;
-  const index = Math.floor(((360 - (degrees % 360)) / arcd)) % segments;
+  
+  // Normalize start angle
+  const normalizedStart = startAngle % (2 * Math.PI);
+  
+  // The pointer is at the top: angle = -PI/2 (or 3PI/2).
+  // When the wheel rotates by normalizedStart, the segment that falls under the pointer is shifted.
+  // The correct calculation for finding the selected segment:
+  const offset = (-Math.PI / 2) - normalizedStart;
+  let normalizedOffset = offset % (2 * Math.PI);
+  if (normalizedOffset < 0) normalizedOffset += 2 * Math.PI;
+  
+  const arcSize = (2 * Math.PI) / segments;
+  const index = Math.floor(normalizedOffset / arcSize) % segments;
+  
   const selectedGame = games[index];
 
-  statusText.textContent = "";  // panel gösterince oradan silecek
+  statusText.textContent = "";
 
-  // Paneli doldur ve göster
-  selectedGameName.textContent = `🎯 Seçilen Oyun: ${selectedGame.name}`;
+  selectedGameName.textContent = `🎯 ${selectedGame.name}`;
   selectedGameImage.src = `https://cdn.cloudflare.steamstatic.com/steam/apps/${selectedGame.appid}/library_600x900.jpg`;
-  selectedGamePanel.style.display = "block";
+  
+  // On error loading image, fallback
+  selectedGameImage.onerror = () => {
+    selectedGameImage.src = `https://cdn.cloudflare.steamstatic.com/steam/apps/${selectedGame.appid}/header.jpg`;
+  };
 
+  selectedGamePanel.classList.add("active");
   spinBtn.disabled = false;
+  spinBtn.textContent = "TEKRAR DÖNDÜR";
 }
+
 closePanelBtn.addEventListener("click", () => {
-  selectedGamePanel.style.display = "none";
+  selectedGamePanel.classList.remove("active");
 });
 
 fetchBtn.addEventListener("click", async () => {
   const steamId = steamIdInput.value.trim();
-  const includeFamily = !familyToggle.checked;
+  const includeFamily = familyToggle.checked;
 
   if (!steamId) {
     alert("Lütfen Steam ID'nizi girin.");
     return;
   }
 
-  statusText.textContent = "Oyunlar getiriliyor...";
+  statusText.textContent = "Oyunlar Steam'den çekiliyor...";
   spinBtn.disabled = true;
-  coverImage.style.display = "none";
 
   try {
     const res = await fetch(`${API_BASE}?steamid=${steamId}`);
     const data = await res.json();
 
     if (!data.response || !data.response.games) {
-      statusText.textContent = "Oyun bulunamadı veya profil gizli olabilir.";
+      statusText.textContent = "Oyun bulunamadı veya profiliniz gizli.";
       return;
     }
 
     let allGames = data.response.games;
-
-    // Oynanmamış oyunları filtrele
     let unplayedGames = allGames.filter(game => game.playtime_forever === 0);
 
-    // Aile paylaşımlı oyunları çıkar (includeFamily false ise)
     if (!includeFamily) {
       unplayedGames = unplayedGames.filter(game => !game.has_community_visible_stats);
     }
 
     if (unplayedGames.length === 0) {
-      statusText.textContent = "Oynanmamış oyun bulunamadı!";
+      statusText.textContent = "Hiç oynanmamış oyun bulunamadı!";
       return;
     }
 
-    // Oyunları güncelle
     games = unplayedGames.map(g => ({name: g.name, appid: g.appid}));
 
-    // Renk paleti oluştur (çeşitli renkler)
     colors = [
       "#FF6384", "#36A2EB", "#FFCE56",
       "#66BB6A", "#BA68C8", "#FF7043",
@@ -159,26 +202,25 @@ fetchBtn.addEventListener("click", async () => {
     ];
 
     segments = games.length;
-
     startAngle = 0;
     drawWheel();
 
-    statusText.textContent = `Toplam ${games.length} oynanmamış oyun bulundu! Çarkı döndürebilirsiniz.`;
+    statusText.textContent = `Toplam ${games.length} oynanmamış oyun bulundu!`;
     spinBtn.disabled = false;
 
   } catch (err) {
     console.error("Fetch hatası:", err);
-    statusText.textContent = "Oyunlar getirilirken hata oluştu. Steam ID'nizi kontrol edin.";
+    statusText.textContent = "Oyunlar getirilirken hata oluştu.";
   }
 });
 
 spinBtn.addEventListener("click", () => {
   if (isSpinning || games.length === 0) return;
   spinTime = 0;
-  spinTimeTotal = Math.floor(Math.random() * 3000) + 3000; // 3-6 saniye arası
+  spinTimeTotal = Math.floor(Math.random() * 3000) + 4000; // 4-7 saniye arası
   isSpinning = true;
   spinBtn.disabled = true;
-  statusText.textContent = "Dönüyor...";
-  coverImage.style.display = "none";
+  spinBtn.textContent = "DÖNÜYOR...";
+  statusText.textContent = "Çark dönüyor, şansına ne çıkacak...";
   rotateWheel();
 });
