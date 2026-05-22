@@ -15,7 +15,7 @@ const ctx = canvas.getContext("2d");
 
 const centerX = canvas.width / 2;
 const centerY = canvas.height / 2;
-const radius = 240; // increased radius for larger wheel feeling
+const radius = 240;
 
 let games = [];
 let colors = [];
@@ -26,9 +26,85 @@ let isSpinning = false;
 let spinTime = 0;
 let spinTimeTotal = 0;
 
-// Initialize an empty wheel
-drawEmptyWheel();
-spinBtn.textContent = "ÇARKI DÖNDÜR";
+const translations = {
+  tr: {
+    title: 'Steam Game Picker <span style="font-size: 2.2rem; transform: translateY(-3px);">🎡</span>',
+    steamIdPlaceholder: "Steam ID (Örn: 76561198...)",
+    includeFamilyText: "Aile paylaşımlı oyunları dahil et",
+    fetchGamesBtn: "Oyunları Getir",
+    spinBtnLoading: "ÇARK YÜKLENİYOR",
+    spinBtnReady: "ÇARKI DÖNDÜR",
+    spinBtnAgain: "TEKRAR DÖNDÜR",
+    spinBtnSpinning: "DÖNÜYOR...",
+    statusInitial: "Lütfen Steam ID'nizi girerek oyunları çekin.",
+    statusEmpty: "Henüz oyun yüklenmedi",
+    statusFetching: "Oyunlar Steam'den çekiliyor...",
+    statusNotFound: "Oyun bulunamadı veya profiliniz gizli.",
+    statusNoUnplayed: "Hiç oynanmamış oyun bulunamadı!",
+    statusFound: "Toplam {count} oynanmamış oyun bulundu!",
+    statusError: "Oyunlar getirilirken hata oluştu.",
+    statusSpinning: "Çark dönüyor, şansına ne çıkacak...",
+    closePanelBtn: "TEŞEKKÜRLER, KAPAT",
+    alertMissingId: "Lütfen Steam ID'nizi girin.",
+    selectedPrefix: "🎯 "
+  },
+  en: {
+    title: 'Steam Game Picker <span style="font-size: 2.2rem; transform: translateY(-3px);">🎡</span>',
+    steamIdPlaceholder: "Steam ID (e.g. 76561198...)",
+    includeFamilyText: "Include family shared games",
+    fetchGamesBtn: "Fetch Games",
+    spinBtnLoading: "WHEEL LOADING",
+    spinBtnReady: "SPIN THE WHEEL",
+    spinBtnAgain: "SPIN AGAIN",
+    spinBtnSpinning: "SPINNING...",
+    statusInitial: "Please enter your Steam ID to fetch games.",
+    statusEmpty: "No games loaded yet",
+    statusFetching: "Fetching games from Steam...",
+    statusNotFound: "No games found or profile is private.",
+    statusNoUnplayed: "No unplayed games found!",
+    statusFound: "Found {count} unplayed games in total!",
+    statusError: "Error occurred while fetching games.",
+    statusSpinning: "Wheel is spinning, let's see what you get...",
+    closePanelBtn: "THANKS, CLOSE",
+    alertMissingId: "Please enter your Steam ID.",
+    selectedPrefix: "🎯 "
+  }
+};
+
+let currentLang = 'tr';
+
+function setLanguage(lang) {
+  currentLang = lang;
+  document.getElementById("lang-tr").classList.toggle("active", lang === 'tr');
+  document.getElementById("lang-en").classList.toggle("active", lang === 'en');
+  
+  document.querySelectorAll("[data-i18n]").forEach(el => {
+    const key = el.getAttribute("data-i18n");
+    if(translations[lang][key]) el.innerHTML = translations[lang][key];
+  });
+
+  document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
+    const key = el.getAttribute("data-i18n-placeholder");
+    if(translations[lang][key]) el.setAttribute("placeholder", translations[lang][key]);
+  });
+  
+  if (games.length === 0) {
+    drawEmptyWheel();
+    statusText.textContent = translations[currentLang].statusInitial;
+    spinBtn.textContent = translations[currentLang].spinBtnReady;
+  } else if (!isSpinning) {
+    statusText.textContent = translations[currentLang].statusFound.replace('{count}', games.length);
+    spinBtn.textContent = translations[currentLang].spinBtnAgain;
+  }
+}
+
+document.getElementById("lang-tr").addEventListener("click", () => setLanguage('tr'));
+document.getElementById("lang-en").addEventListener("click", () => setLanguage('en'));
+
+
+// Initialize
+setLanguage('tr');
+
 
 function drawEmptyWheel() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -42,7 +118,7 @@ function drawEmptyWheel() {
   ctx.textAlign = "center";
   ctx.fillStyle = "rgba(255,255,255,0.3)";
   ctx.font = "bold 20px Inter";
-  ctx.fillText("Henüz oyun yüklenmedi", centerX, centerY);
+  ctx.fillText(translations[currentLang].statusEmpty, centerX, centerY);
 }
 
 function drawWheel() {
@@ -69,7 +145,6 @@ function drawWheel() {
     ctx.fillStyle = "#fff";
     ctx.font = "bold 14px Inter";
     
-    // Shadow for text readability
     ctx.shadowColor = "rgba(0,0,0,0.8)";
     ctx.shadowBlur = 4;
 
@@ -80,7 +155,6 @@ function drawWheel() {
     ctx.restore();
   }
 
-  // Draw Center Circle
   ctx.beginPath();
   ctx.arc(centerX, centerY, 30, 0, 2 * Math.PI);
   ctx.fillStyle = "#1b2838";
@@ -89,7 +163,6 @@ function drawWheel() {
   ctx.strokeStyle = "#66c0f4";
   ctx.stroke();
 
-  // Draw sleek pointer
   ctx.fillStyle = "#ff4747";
   ctx.shadowColor = "rgba(0,0,0,0.5)";
   ctx.shadowBlur = 10;
@@ -100,7 +173,7 @@ function drawWheel() {
   ctx.closePath();
   ctx.fill();
   
-  ctx.shadowBlur = 0; // reset
+  ctx.shadowBlur = 0;
 }
 
 function easeOut(t, b, c, d) {
@@ -125,12 +198,7 @@ function rotateWheel() {
 function stopRotateWheel() {
   isSpinning = false;
   
-  // Normalize start angle
   const normalizedStart = startAngle % (2 * Math.PI);
-  
-  // The pointer is at the top: angle = -PI/2 (or 3PI/2).
-  // When the wheel rotates by normalizedStart, the segment that falls under the pointer is shifted.
-  // The correct calculation for finding the selected segment:
   const offset = (-Math.PI / 2) - normalizedStart;
   let normalizedOffset = offset % (2 * Math.PI);
   if (normalizedOffset < 0) normalizedOffset += 2 * Math.PI;
@@ -142,17 +210,16 @@ function stopRotateWheel() {
 
   statusText.textContent = "";
 
-  selectedGameName.textContent = `🎯 ${selectedGame.name}`;
+  selectedGameName.textContent = translations[currentLang].selectedPrefix + selectedGame.name;
   selectedGameImage.src = `https://cdn.cloudflare.steamstatic.com/steam/apps/${selectedGame.appid}/library_600x900.jpg`;
   
-  // On error loading image, fallback
   selectedGameImage.onerror = () => {
     selectedGameImage.src = `https://cdn.cloudflare.steamstatic.com/steam/apps/${selectedGame.appid}/header.jpg`;
   };
 
   selectedGamePanel.classList.add("active");
   spinBtn.disabled = false;
-  spinBtn.textContent = "TEKRAR DÖNDÜR";
+  spinBtn.textContent = translations[currentLang].spinBtnAgain;
 }
 
 closePanelBtn.addEventListener("click", () => {
@@ -164,11 +231,11 @@ fetchBtn.addEventListener("click", async () => {
   const includeFamily = familyToggle.checked;
 
   if (!steamId) {
-    alert("Lütfen Steam ID'nizi girin.");
+    alert(translations[currentLang].alertMissingId);
     return;
   }
 
-  statusText.textContent = "Oyunlar Steam'den çekiliyor...";
+  statusText.textContent = translations[currentLang].statusFetching;
   spinBtn.disabled = true;
 
   try {
@@ -176,7 +243,7 @@ fetchBtn.addEventListener("click", async () => {
     const data = await res.json();
 
     if (!data.response || !data.response.games) {
-      statusText.textContent = "Oyun bulunamadı veya profiliniz gizli.";
+      statusText.textContent = translations[currentLang].statusNotFound;
       return;
     }
 
@@ -188,7 +255,7 @@ fetchBtn.addEventListener("click", async () => {
     }
 
     if (unplayedGames.length === 0) {
-      statusText.textContent = "Hiç oynanmamış oyun bulunamadı!";
+      statusText.textContent = translations[currentLang].statusNoUnplayed;
       return;
     }
 
@@ -205,22 +272,22 @@ fetchBtn.addEventListener("click", async () => {
     startAngle = 0;
     drawWheel();
 
-    statusText.textContent = `Toplam ${games.length} oynanmamış oyun bulundu!`;
+    statusText.textContent = translations[currentLang].statusFound.replace('{count}', games.length);
     spinBtn.disabled = false;
 
   } catch (err) {
     console.error("Fetch hatası:", err);
-    statusText.textContent = "Oyunlar getirilirken hata oluştu.";
+    statusText.textContent = translations[currentLang].statusError;
   }
 });
 
 spinBtn.addEventListener("click", () => {
   if (isSpinning || games.length === 0) return;
   spinTime = 0;
-  spinTimeTotal = Math.floor(Math.random() * 3000) + 4000; // 4-7 saniye arası
+  spinTimeTotal = Math.floor(Math.random() * 3000) + 4000;
   isSpinning = true;
   spinBtn.disabled = true;
-  spinBtn.textContent = "DÖNÜYOR...";
-  statusText.textContent = "Çark dönüyor, şansına ne çıkacak...";
+  spinBtn.textContent = translations[currentLang].spinBtnSpinning;
+  statusText.textContent = translations[currentLang].statusSpinning;
   rotateWheel();
 });

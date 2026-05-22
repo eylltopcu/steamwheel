@@ -26,6 +26,30 @@ body {
   align-items: center;
   overflow-x: hidden;
   background-attachment: fixed;
+  zoom: 0.75;
+}
+
+.lang-switch {
+  position: absolute;
+  top: 20px;
+  right: 40px;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--steam-white);
+  cursor: pointer;
+  z-index: 10;
+}
+.lang-switch span {
+  opacity: 0.5;
+  transition: opacity 0.3s;
+}
+.lang-switch span.active {
+  opacity: 1;
+  color: var(--steam-blue);
+  text-shadow: 0 0 10px var(--neon-glow);
+}
+.lang-switch span:hover {
+  opacity: 0.8;
 }
 
 .container {
